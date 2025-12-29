@@ -141,7 +141,7 @@ const Home = () => {
             <span>🍚</span>
           </h3>
           <div className="count-box">{dashboardData.mealCount}</div>
-          <p className="sub-text">최근 메뉴: {dashboardData.recentMenu}</p>
+          <p className="sub-text">마지막 메뉴: {dashboardData.recentMenu}</p>
           <Link to="/meal">
             <button>기록하러 가기</button>
           </Link>
