@@ -199,7 +199,7 @@ const Meal = () => {
         >
           {meals.length === 0 ? (
             <p style={{ color: "#cbd5e0", marginTop: "20px" }}>
-              아직 기록된 식단이 없어!
+              아직 기록된 식단이 없어요!
             </p>
           ) : (
             meals.map((meal) => (
