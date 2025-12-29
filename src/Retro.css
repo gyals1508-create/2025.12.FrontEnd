@@ -1,5 +1,3 @@
-/* src/Retro.css 전체 코드 */
-
 /* ============================================================
    [폰트 설정] 구글 폰트(Jua) 불러오기 
    ============================================================ */
@@ -12,7 +10,10 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f4f7fe;
+
+  /* ★ 수정됨: 피그마 디자인 배경색 적용 (#ECEAF3) ★ */
+  background-color: #eceaf3;
+
   display: flex;
   justify-content: center;
   min-height: 100vh;
@@ -237,7 +238,7 @@ body {
 }
 
 /* ============================================================
-   3. 대시보드 (Home) 전용 스타일 (★여기가 중요!★)
+   3. 대시보드 (Home) 전용 스타일
    ============================================================ */
 .home-container {
   max-width: 900px;
@@ -279,7 +280,6 @@ body {
   border: 2px solid #e2e8f0;
 }
 
-/* ★ 수정된 부분 ★ */
 .card h3 {
   color: #2d3748;
   font-size: 1.6rem;
