@@ -1,90 +1,31 @@
 import React, { useState, useEffect } from "react";
-import "../Retro.css"; // 디자인 파일 연결
+import "../Retro.css"; // 디자인 파일
 
 const Meal = () => {
   // =================================================================
-  // 1. 상태(State) 관리
+  // 1. [상태 관리] 변수 선언
   // =================================================================
   const [currentDate, setCurrentDate] = useState(new Date());
   const [mealType, setMealType] = useState("아침");
   const [inputValue, setInputValue] = useState("");
-  const [meals, setMeals] = useState([]); // 서버에서 받아온 식단 리스트
+  const [meals, setMeals] = useState([]);
 
   // =================================================================
-  // 2. 백엔드 통신 & 기능 구현
+  // 2. [기능 함수] 날짜 변환 및 이동
   // =================================================================
-
-  // [날짜 변환기] "2025-01-03" 형식의 문자열로 변환 (서버가 좋아하는 형식)
   const getDateStr = (dateObj) => {
     const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // 01월, 02월...
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
     const day = String(dateObj.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
-  // [조회 (READ)] 날짜가 바뀔 때마다 서버에서 데이터 가져오기
-  useEffect(() => {
-    const dateStr = getDateStr(currentDate);
-    // GET 요청: /api/meals?date=2025-01-03
-    fetch(`http://localhost:8080/api/meals?date=${dateStr}`)
-      .then((res) => res.json()) // 서버가 준 데이터를 자바스크립트 객체로 변환
-      .then((data) => {
-        setMeals(data); // 화면에 반영
-      })
-      .catch((err) => console.error("데이터 가져오기 실패:", err));
-  }, [currentDate]);
-
-  // [추가 (CREATE)]
-  const addMeal = () => {
-    if (inputValue.trim() === "") return;
-
-    const dateStr = getDateStr(currentDate);
-    const newMealData = {
-      text: inputValue, // 메뉴 이름
-      mealType: mealType, // 아침/점심...
-      mealDate: dateStr, // 2025-01-03
-    };
-
-    // POST 요청: 데이터 저장해줘!
-    fetch("http://localhost:8080/api/meals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newMealData),
-    })
-      .then((res) => res.json())
-      .then((savedMeal) => {
-        // 서버에 저장된 데이터를 받아서 리스트에 추가 (새로고침 없이 바로 뜸)
-        setMeals([...meals, savedMeal]);
-        setInputValue("");
-      })
-      .catch((err) => console.error("저장 실패:", err));
-  };
-
-  // [삭제 (DELETE)]
-  const deleteMeal = (id) => {
-    // DELETE 요청: 이 ID 지워줘!
-    fetch(`http://localhost:8080/api/meals/${id}`, {
-      method: "DELETE",
-    })
-      .then(() => {
-        // 성공하면 화면에서도 삭제
-        setMeals(meals.filter((meal) => meal.id !== id));
-      })
-      .catch((err) => console.error("삭제 실패:", err));
-  };
-
-  // 날짜 변경 (화살표 클릭 시)
   const changeDate = (days) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + days);
     setCurrentDate(newDate);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") addMeal();
-  };
-
-  // 화면 표시용 날짜 포맷 (2025년 1월 3일 금요일)
   const formattedDate = currentDate.toLocaleDateString("ko-KR", {
     year: "numeric",
     month: "long",
@@ -93,7 +34,61 @@ const Meal = () => {
   });
 
   // =================================================================
-  // 3. 화면 렌더링 (UI)
+  // 3. [서버 통신] 데이터 가져오기 & 보내기
+  // =================================================================
+
+  // [조회] 날짜가 바뀌면 실행
+  useEffect(() => {
+    const dateStr = getDateStr(currentDate);
+    fetch(`http://localhost:8080/api/meals?date=${dateStr}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setMeals(data);
+      })
+      .catch((err) => console.error("데이터 가져오기 실패:", err));
+  }, [currentDate]);
+
+  // [추가]
+  const addMeal = () => {
+    if (inputValue.trim() === "") return;
+
+    const dateStr = getDateStr(currentDate);
+    const newMealData = {
+      text: inputValue,
+      mealType: mealType,
+      mealDate: dateStr,
+    };
+
+    fetch("http://localhost:8080/api/meals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newMealData),
+    })
+      .then((res) => res.json())
+      .then((savedMeal) => {
+        setMeals([...meals, savedMeal]);
+        setInputValue("");
+      })
+      .catch((err) => console.error("저장 실패:", err));
+  };
+
+  // [삭제]
+  const deleteMeal = (id) => {
+    fetch(`http://localhost:8080/api/meals/${id}`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        setMeals(meals.filter((meal) => meal.id !== id));
+      })
+      .catch((err) => console.error("삭제 실패:", err));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") addMeal();
+  };
+
+  // =================================================================
+  // 4. [화면 렌더링] UI 구성
   // =================================================================
   return (
     <div className="main-content">
@@ -151,6 +146,7 @@ const Meal = () => {
             display: "flex",
             gap: "8px",
             flexWrap: "wrap",
+            justifyContent: "center",
           }}
         >
           {["아침", "점심", "저녁", "간식"].map((type) => (
@@ -198,14 +194,20 @@ const Meal = () => {
           style={{ width: "100%", display: "flex", flexDirection: "column" }}
         >
           {meals.length === 0 ? (
-            <p style={{ color: "#cbd5e0", marginTop: "20px" }}>
+            // ★ 수정됨: textAlign: 'center' 추가 ★
+            <p
+              style={{
+                color: "#cbd5e0",
+                marginTop: "20px",
+                textAlign: "center",
+              }}
+            >
               아직 기록된 식단이 없어요!
             </p>
           ) : (
             meals.map((meal) => (
               <div className="item-row" key={meal.id}>
                 <span style={{ display: "flex", alignItems: "center" }}>
-                  {/* DB에서 가져온 mealType과 text 표시 */}
                   <strong style={{ color: "#5e72e4", marginRight: "8px" }}>
                     [{meal.mealType}]
                   </strong>
