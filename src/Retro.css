@@ -389,3 +389,11 @@ body {
   font-size: 0.9rem;
   margin-top: auto;
 }
+.pixel-btn.edit {
+  background: #48bb78 !important; /* 산뜻한 초록색 */
+  height: 40px; /* 삭제 버튼과 높이 통일 */
+  padding: 0 25px; /* 좌우 여백 통일 */
+  font-size: 16px;
+  border-radius: 15px;
+  box-shadow: none !important; /* 깔끔하게 그림자 제거 */
+}

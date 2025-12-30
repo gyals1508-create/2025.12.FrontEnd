@@ -11,6 +11,8 @@ const Meal = () => {
   const [mealType, setMealType] = useState("아침");
   const [inputValue, setInputValue] = useState("");
   const [meals, setMeals] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState("");
 
   const getDateStr = (dateObj) => {
     const year = dateObj.getFullYear();
@@ -25,7 +27,6 @@ const Meal = () => {
     setCurrentDate(newDate);
   };
 
-  // Home.jsx와 동일한 커스텀 입력창
   const CustomInput = React.forwardRef(({ value, onClick }, ref) => (
     <span
       onClick={onClick}
@@ -35,6 +36,7 @@ const Meal = () => {
         color: "#4a5568",
         cursor: "pointer",
         fontSize: "1.1rem",
+        outline: "none",
       }}
     >
       {value} 📅
@@ -51,29 +53,45 @@ const Meal = () => {
 
   const addMeal = () => {
     if (inputValue.trim() === "") return;
-    const dateStr = getDateStr(currentDate);
-    const newMealData = {
-      text: inputValue,
-      mealType: mealType,
-      mealDate: dateStr,
-    };
     fetch("http://localhost:8080/api/meals", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newMealData),
+      body: JSON.stringify({
+        text: inputValue,
+        mealType,
+        mealDate: getDateStr(currentDate),
+      }),
     })
       .then((res) => res.json())
-      .then((savedMeal) => {
-        setMeals([...meals, savedMeal]);
+      .then((saved) => {
+        setMeals([...meals, saved]);
         setInputValue("");
       });
   };
 
   const deleteMeal = (id) => {
     fetch(`http://localhost:8080/api/meals/${id}`, { method: "DELETE" }).then(
-      () => setMeals(meals.filter((meal) => meal.id !== id))
+      () => setMeals(meals.filter((m) => m.id !== id))
     );
   };
+
+  const saveEdit = (id) => {
+    const meal = meals.find((m) => m.id === id);
+    fetch(`http://localhost:8080/api/meals/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...meal, text: editingText }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setMeals(meals.map((m) => (m.id === id ? data : m)));
+        setEditingId(null);
+      });
+  };
+
+  const placeholderText = `${mealType}${
+    mealType === "간식" ? "으로" : "에"
+  } 먹은 음식을 적어주세요!`;
 
   return (
     <div className="main-content">
@@ -84,7 +102,7 @@ const Meal = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "15px",
+            gap: "20px",
             marginBottom: "25px",
           }}
         >
@@ -94,8 +112,10 @@ const Meal = () => {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#a0aec0",
-              fontSize: "1.2rem",
+              color: "#5e72e4",
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              outline: "none",
             }}
           >
             ◀
@@ -113,8 +133,10 @@ const Meal = () => {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#a0aec0",
-              fontSize: "1.2rem",
+              color: "#5e72e4",
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              outline: "none",
             }}
           >
             ▶
@@ -132,7 +154,7 @@ const Meal = () => {
                 padding: "8px 16px",
                 borderRadius: "15px",
                 cursor: "pointer",
-                fontFamily: "Jua",
+                outline: "none",
               }}
             >
               {type}
@@ -143,38 +165,111 @@ const Meal = () => {
           <input
             className="pixel-input"
             type="text"
-            placeholder="먹은 음식을 적어주세요!"
+            placeholder={placeholderText}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && addMeal()}
+            style={{ outline: "none" }}
           />
-          <button className="pixel-btn" onClick={addMeal}>
+          <button
+            className="pixel-btn"
+            onClick={addMeal}
+            style={{ outline: "none" }}
+          >
             추가
           </button>
         </div>
         <div style={{ width: "100%" }}>
-          {meals.length === 0 ? (
-            <p style={{ textAlign: "center", color: "#cbd5e0" }}>
-              아직 기록이 없어요!
-            </p>
-          ) : (
-            meals.map((meal) => (
-              <div className="item-row" key={meal.id}>
-                <span>
-                  <strong style={{ color: "#5e72e4" }}>
-                    [{meal.mealType}]
-                  </strong>{" "}
-                  {meal.text}
-                </span>
-                <button
-                  className="pixel-btn delete"
-                  onClick={() => deleteMeal(meal.id)}
-                >
-                  삭제
-                </button>
+          {meals.map((meal) => (
+            <div
+              className="item-row"
+              key={meal.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ flex: 1, textAlign: "left" }}>
+                {editingId === meal.id ? (
+                  <input
+                    className="pixel-input"
+                    style={{
+                      width: "90%",
+                      height: "35px",
+                      fontSize: "16px",
+                      outline: "none",
+                    }}
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    autoFocus
+                    onKeyPress={(e) => e.key === "Enter" && saveEdit(meal.id)}
+                  />
+                ) : (
+                  <>
+                    <strong style={{ color: "#5e72e4" }}>
+                      [{meal.mealType}]
+                    </strong>{" "}
+                    {meal.text}
+                  </>
+                )}
+              </span>
+              <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                {editingId === meal.id ? (
+                  <>
+                    <button
+                      className="pixel-btn edit"
+                      style={{
+                        height: "40px",
+                        padding: "0 20px",
+                        fontSize: "16px",
+                        borderRadius: "15px",
+                        minWidth: "70px",
+                        outline: "none",
+                      }}
+                      onClick={() => saveEdit(meal.id)}
+                    >
+                      완료
+                    </button>
+                    <button
+                      className="pixel-btn delete"
+                      style={{ marginLeft: "0 !important", outline: "none" }}
+                      onClick={() => setEditingId(null)}
+                    >
+                      취소
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="pixel-btn edit"
+                      style={{
+                        height: "40px",
+                        padding: "0 20px",
+                        fontSize: "16px",
+                        borderRadius: "15px",
+                        minWidth: "70px",
+                        outline: "none",
+                      }}
+                      onClick={() => {
+                        setEditingId(meal.id);
+                        setEditingText(meal.text);
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      className="pixel-btn delete"
+                      style={{ marginLeft: "0 !important", outline: "none" }}
+                      onClick={() => deleteMeal(meal.id)}
+                    >
+                      삭제
+                    </button>
+                  </>
+                )}
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
