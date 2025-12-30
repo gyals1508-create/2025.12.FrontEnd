@@ -93,6 +93,7 @@ const Shopping = () => {
     if (e.key === "Enter") addItem();
   };
 
+  // ★ 이미 한글로 잘 나오도록 설정되어 있어! ("2025년 12월 30일 화요일")
   const formattedDate = currentDate.toLocaleDateString("ko-KR", {
     year: "numeric",
     month: "long",
