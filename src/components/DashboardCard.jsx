@@ -12,7 +12,7 @@ const DashboardCard = ({
   isShopping,
   income,
   expense,
-  totalCalories, // Home.jsx에서 전달받은 값
+  totalCalories, // Home.jsx에서 넘겨받는 Props
 }) => {
   const cardStyle = {
     flex: "1",
@@ -30,7 +30,6 @@ const DashboardCard = ({
   };
 
   const totalBalance = (income || 0) - (expense || 0);
-  // 칼로리 초과 상태 체크 (2000kcal 기준)
   const isOver = (totalCalories || 0) > 2000;
 
   return (

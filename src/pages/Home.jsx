@@ -62,12 +62,9 @@ const Home = () => {
         const expense = txs
           .filter((t) => t.txType === "EXPENSE")
           .reduce((sum, t) => sum + t.amount, 0);
-        const sortedShopping = [...shopping].sort(
-          (a, b) => a.isBought - b.isBought
-        );
         setDashboardData({
           meals,
-          shoppingItems: sortedShopping,
+          shoppingItems: shopping,
           todos,
           income,
           expense,
@@ -76,7 +73,6 @@ const Home = () => {
       .catch((err) => console.error("데이터 로딩 실패:", err));
   }, [currentDate]);
 
-  // ★ 칼로리 합산 및 상태 체크 로직 추가
   const totalCalories = dashboardData.meals.reduce(
     (sum, m) => sum + (Number(m.calories) || 0),
     0
@@ -96,26 +92,11 @@ const Home = () => {
         padding: "0 15px",
       }}
     >
-      <header
-        style={{ marginBottom: "50px", textAlign: "center", width: "100%" }}
-      >
-        <h2
-          style={{
-            fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
-            color: "#2d3748",
-            marginBottom: "15px",
-          }}
-        >
+      <header style={{ marginBottom: "50px", textAlign: "center" }}>
+        <h2 style={{ fontSize: "2.5rem", color: "#2d3748" }}>
           👛 POCKET DASHBOARD
         </h2>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "20px",
-          }}
-        >
+        <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
           <button
             onClick={() =>
               setCurrentDate(
@@ -128,7 +109,6 @@ const Home = () => {
               cursor: "pointer",
               color: "#5e72e4",
               fontSize: "1.5rem",
-              outline: "none",
             }}
           >
             ◀
@@ -152,23 +132,18 @@ const Home = () => {
               cursor: "pointer",
               color: "#5e72e4",
               fontSize: "1.5rem",
-              outline: "none",
             }}
           >
             ▶
           </button>
         </div>
       </header>
-
       <div
         style={{
           display: "flex",
-          flexDirection: "row",
           flexWrap: "wrap",
           gap: "25px",
-          width: "100%",
           justifyContent: "center",
-          paddingBottom: "40px",
         }}
       >
         <DashboardCard
@@ -178,8 +153,6 @@ const Home = () => {
           linkTo="/schedule"
           btnText="자세히 보기"
         />
-
-        {/* ★ 식단 카드에 totalCalories 전달 */}
         <DashboardCard
           title="오늘의 식단 🍚"
           list={dashboardData.meals}
@@ -189,7 +162,6 @@ const Home = () => {
           isMeal={true}
           totalCalories={totalCalories}
         />
-
         <DashboardCard
           title="장바구니 🛍️"
           list={dashboardData.shoppingItems}
@@ -210,5 +182,4 @@ const Home = () => {
     </div>
   );
 };
-
 export default Home;

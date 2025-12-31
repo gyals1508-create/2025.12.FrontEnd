@@ -41,7 +41,6 @@ const Shopping = () => {
     </span>
   ));
 
-  // 날짜 변경 시 데이터를 가져오되, 즐겨찾기 목록 구성을 위해 전체 데이터를 관리하는 흐름으로 유지
   useEffect(() => {
     const dateStr = getDateStr(currentDate);
     fetch(`http://localhost:8080/api/shopping?date=${dateStr}`)
@@ -60,12 +59,7 @@ const Shopping = () => {
 
   const addItemWithText = (text) => {
     if (!text || text.trim() === "") return;
-    const existingItem = items.find(
-      (i) =>
-        i.text === text &&
-        !i.isBought &&
-        i.shoppingDate === getDateStr(currentDate)
-    );
+    const existingItem = items.find((i) => i.text === text && !i.isBought);
 
     if (existingItem) {
       const updatedItem = {
@@ -122,7 +116,6 @@ const Shopping = () => {
     );
   };
 
-  // ★ 수정된 삭제 로직: 즐겨찾기면 날짜만 비우고, 아니면 완전 삭제
   const handleDelete = (item) => {
     if (item.isFavorite) {
       const updatedItem = {
@@ -160,6 +153,7 @@ const Shopping = () => {
       }}
     >
       <style>{`.no-dot::before { content: none !important; }`}</style>
+
       <div className="pixel-card" style={{ flex: 1.5, minWidth: "0" }}>
         <h3>오늘의 장바구니🛍️</h3>
         <div
@@ -316,6 +310,7 @@ const Shopping = () => {
           )}
         </div>
       </div>
+
       <div
         className="pixel-card"
         style={{
