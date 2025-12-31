@@ -12,7 +12,7 @@ const DashboardCard = ({
   isShopping,
   income,
   expense,
-  totalCalories, // Home.jsx에서 넘겨받는 Props
+  totalCalories,
 }) => {
   const cardStyle = {
     flex: "1",
@@ -45,7 +45,6 @@ const DashboardCard = ({
       >
         {title}
       </h3>
-
       <div
         style={{
           width: "100%",
@@ -67,15 +66,13 @@ const DashboardCard = ({
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "#a0aec0" }}>수입</span>
               <span style={{ color: "#5e72e4", fontWeight: "bold" }}>
-                {income > 0 ? "+" : ""}
-                {income.toLocaleString()}원
+                +{income.toLocaleString()}원
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "#a0aec0" }}>지출</span>
               <span style={{ color: "#f5365c", fontWeight: "bold" }}>
-                {expense > 0 ? "-" : ""}
-                {expense.toLocaleString()}원
+                -{expense.toLocaleString()}원
               </span>
             </div>
             <div
@@ -106,52 +103,38 @@ const DashboardCard = ({
               </span>
             </div>
           </div>
-        ) : list && list.length > 0 ? (
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              color: "#4a5568",
-            }}
-          >
-            {list.slice(0, 5).map((item, idx) => (
-              <li
-                key={idx}
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {list && list.length > 0 ? (
+              list.slice(0, 5).map((item, idx) => (
+                <li
+                  key={idx}
+                  style={{
+                    marginBottom: "12px",
+                    fontSize: "0.95rem",
+                    color: item.isBought ? "#cbd5e0" : "#4a5568",
+                  }}
+                >
+                  {isShopping ? (item.isBought ? "✅ " : "🛒 ") : "• "}
+                  {item.text || item.title}
+                </li>
+              ))
+            ) : (
+              <p
                 style={{
-                  marginBottom: "12px",
-                  fontSize: "0.95rem",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  color: item.isBought ? "#cbd5e0" : "#4a5568",
+                  color: "#cbd5e0",
+                  textAlign: "center",
+                  marginTop: "60px",
                 }}
               >
-                {isShopping ? (item.isBought ? "✅ " : "🛒 ") : "• "}
-                {isMeal && item.mealType ? `[${item.mealType}] ` : ""}
-                {item.text || item.title || "항목"}
-              </li>
-            ))}
+                {emptyMsg}
+              </p>
+            )}
           </ul>
-        ) : (
-          <p
-            style={{
-              color: "#cbd5e0",
-              fontSize: "0.9rem",
-              textAlign: "center",
-              marginTop: "60px",
-            }}
-          >
-            {emptyMsg}
-          </p>
         )}
       </div>
-
-      {/* ★ 식단 카드일 경우 버튼 위에 총 칼로리 표시 추가 */}
       {isMeal && (
-        <div
-          style={{ textAlign: "center", marginBottom: "15px", width: "100%" }}
-        >
+        <div style={{ textAlign: "center", marginBottom: "15px" }}>
           <p
             style={{
               margin: "0 0 5px 0",
@@ -172,11 +155,15 @@ const DashboardCard = ({
           </span>
         </div>
       )}
-
-      <Link to={linkTo} style={{ width: "100%" }}>
+      <Link to={linkTo} style={{ width: "100%", outline: "none" }}>
         <button
           className="pixel-btn"
-          style={{ width: "100%", padding: "12px" }}
+          style={{
+            width: "100%",
+            padding: "12px",
+            outline: "none",
+            border: "none",
+          }}
         >
           {btnText}
         </button>
@@ -184,5 +171,4 @@ const DashboardCard = ({
     </div>
   );
 };
-
 export default DashboardCard;
