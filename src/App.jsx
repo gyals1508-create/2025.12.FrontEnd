@@ -1,5 +1,4 @@
 import React from "react";
-// [라우팅 도구] 리액트에서 페이지 이동을 처리하기 위한 필수 컴포넌트들
 import {
   BrowserRouter,
   Routes,
@@ -8,20 +7,23 @@ import {
   useLocation,
 } from "react-router-dom";
 
-// [페이지 컴포넌트] 우리가 만든 페이지들 불러오기
 import Home from "./pages/Home";
 import Meal from "./pages/Meal";
 import Shopping from "./pages/Shopping";
-import "./Retro.css"; // 전체 디자인(CSS) 연결
+import Login from "../../Self_Practice/Login";
+import Signup from "../../Self_Practice/Signup";
+import "./Retro.css";
 
-// [네비게이션 바 컴포넌트]
 function Nav() {
-  const location = useLocation(); // 현재 위치 확인 (탭 색상 변경용)
+  const location = useLocation();
+
+  // 특정 페이지(로그인, 회원가입)에서 상단 헤더 숨김 처리
+  if (location.pathname === "/login" || location.pathname === "/signup")
+    return null;
 
   return (
     <nav className="pixel-nav-container">
       <div className="pixel-nav-bar">
-        {/* [로고 영역] */}
         <Link
           to="/"
           className="nav-logo-small"
@@ -29,20 +31,14 @@ function Nav() {
         >
           <span className="logo-text">Pocket Life</span>
         </Link>
-
-        {/* [중앙 메뉴 탭 영역] */}
         <div className="nav-tabs">
-          {/* 1. 대시보드 */}
           <Link
             to="/"
             className={`nav-tab ${location.pathname === "/" ? "active" : ""}`}
           >
             대시보드
           </Link>
-
           <div className="nav-divider"></div>
-
-          {/* 2. 식단 관리 */}
           <Link
             to="/meal"
             className={`nav-tab ${
@@ -51,10 +47,7 @@ function Nav() {
           >
             식단 관리
           </Link>
-
           <div className="nav-divider"></div>
-
-          {/* 3. 장보기 */}
           <Link
             to="/shopping"
             className={`nav-tab ${
@@ -63,8 +56,6 @@ function Nav() {
           >
             장바구니
           </Link>
-
-          {/* ▼ [추가됨] 4. 일정 ▼ */}
           <div className="nav-divider"></div>
           <Link
             to="/schedule"
@@ -74,8 +65,6 @@ function Nav() {
           >
             일정
           </Link>
-
-          {/* ▼ [추가됨] 5. 가계부 ▼ */}
           <div className="nav-divider"></div>
           <Link
             to="/account"
@@ -86,34 +75,23 @@ function Nav() {
             가계부
           </Link>
         </div>
-
-        {/* [우측 사용자 정보] */}
         <div className="nav-user-info">ㅇㅇ님 반갑습니다.</div>
       </div>
     </nav>
   );
 }
 
-// [메인 앱 컴포넌트]
 function App() {
   return (
     <BrowserRouter>
-      {/* 네비게이션 바 (항상 보임) */}
       <Nav />
-
-      {/* 실제 페이지 내용이 바뀌는 부분 */}
       <main className="main-content">
         <Routes>
-          {/* 1. 대시보드 */}
           <Route path="/" element={<Home />} />
-
-          {/* 2. 식단 관리 */}
           <Route path="/meal" element={<Meal />} />
-
-          {/* 3. 장보기 */}
           <Route path="/shopping" element={<Shopping />} />
-
-          {/* 4. 일정 (아직 파일 없으니 임시 문구 표시) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route
             path="/schedule"
             element={
@@ -125,8 +103,6 @@ function App() {
               </div>
             }
           />
-
-          {/* 5. 가계부 (아직 파일 없으니 임시 문구 표시) */}
           <Route
             path="/account"
             element={
