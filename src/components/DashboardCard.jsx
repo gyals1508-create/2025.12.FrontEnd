@@ -35,7 +35,6 @@ const DashboardCard = ({
   const safeCalories = Number(totalCalories) || 0;
   const isOver = safeCalories > 2000;
 
-  // 장바구니 미완료 항목 존재 여부 확인
   const hasUnconfirmedItems =
     isShopping &&
     list &&
@@ -138,7 +137,13 @@ const DashboardCard = ({
                     }}
                   >
                     {isShopping ? (item.isBought ? "✅ " : "🛒 ") : "• "}
-                    {item.text || item.title}
+                    {/* [최종수정] 식단일 경우 파란색 강조 말머리 추가 */}
+                    {isMeal && item.mealType && (
+                      <strong style={{ color: "#5e72e4", marginRight: "6px" }}>
+                        [{item.mealType}]
+                      </strong>
+                    )}
+                    {item.text || item.menuName}
                   </span>
                   {isMeal && item.calories !== undefined && (
                     <span
@@ -192,7 +197,6 @@ const DashboardCard = ({
         </div>
       )}
 
-      {/* 버튼 바로 위로 이동된 경고 문구 */}
       {hasUnconfirmedItems && (
         <div
           style={{
