@@ -22,6 +22,27 @@ const Shopping = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // 서버로부터 전체 아이템(날짜별 + 즐겨찾기) 로드
+  const fetchItems = () => {
+    const dateStr = getDateStr(currentDate);
+    fetch(`http://localhost:8080/api/shopping?date=${dateStr}`)
+      .then((res) => res.json())
+      .then((data) =>
+        setItems(
+          data.map((i) => ({
+            ...i,
+            isFavorite: i.isFavorite || false,
+            count: i.count || 1,
+          }))
+        )
+      )
+      .catch((err) => console.error("로드 실패:", err));
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, [currentDate]);
+
   const changeDate = (days) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + days);
@@ -46,22 +67,6 @@ const Shopping = () => {
       {value} 📅
     </span>
   ));
-
-  useEffect(() => {
-    const dateStr = getDateStr(currentDate);
-    fetch(`http://localhost:8080/api/shopping?date=${dateStr}`)
-      .then((res) => res.json())
-      .then((data) =>
-        setItems(
-          data.map((i) => ({
-            ...i,
-            isFavorite: i.isFavorite || false,
-            count: i.count || 1,
-          }))
-        )
-      )
-      .catch((err) => console.error("로드 실패:", err));
-  }, [currentDate]);
 
   const handleMoveToDate = (dateStr, text) => {
     setCurrentDate(new Date(dateStr));
@@ -94,12 +99,9 @@ const Shopping = () => {
   const addItemWithText = (text) => {
     if (!text || text.trim() === "") return;
     const dateStr = getDateStr(currentDate);
-
-    // 로직 보완: 전체 아이템 중 동일 이름의 즐겨찾기 여부를 확인하여 새 항목에 적용
     const isAlreadyFavorite = items.some(
       (i) => i.text === text && i.isFavorite
     );
-
     const existingInToday = items.find(
       (i) => i.text === text && i.shoppingDate === dateStr
     );
@@ -113,30 +115,24 @@ const Shopping = () => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedItem),
-      }).then(() =>
-        setItems(
-          items.map((i) => (i.id === existingInToday.id ? updatedItem : i))
-        )
-      );
+      }).then(() => fetchItems());
     } else {
       const newItem = {
         text,
         isBought: false,
         shoppingDate: dateStr,
-        isFavorite: isAlreadyFavorite, // 즐겨찾기 상태 상속
+        isFavorite: isAlreadyFavorite,
         count: 1,
       };
       fetch("http://localhost:8080/api/shopping", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newItem),
-      })
-        .then((res) => res.json())
-        .then((savedItem) => {
-          setItems([...items, { ...savedItem, count: 1 }]);
-          setInputValue("");
-          setSearchError("");
-        });
+      }).then(() => {
+        fetchItems();
+        setInputValue("");
+        setSearchError("");
+      });
     }
   };
 
@@ -146,54 +142,26 @@ const Shopping = () => {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedItem),
-    }).then(() =>
-      setItems(items.map((i) => (i.id === item.id ? updatedItem : i)))
-    );
+    }).then(() => fetchItems());
   };
 
-  // 로직 보완: 동일한 이름을 가진 모든 항목의 즐겨찾기 상태를 동기화
   const toggleFavorite = (item) => {
     const nextFavoriteStatus = !item.isFavorite;
-
-    // 현재 클릭한 항목 업데이트
     const updatedItem = { ...item, isFavorite: nextFavoriteStatus };
-
     fetch(`http://localhost:8080/api/shopping/${item.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedItem),
-    }).then(() => {
-      // 핵심: 메모리에 있는 모든 '이름이 같은' 품목들의 별 상태를 동기화
-      setItems((prevItems) =>
-        prevItems.map((i) =>
-          i.text === item.text ? { ...i, isFavorite: nextFavoriteStatus } : i
-        )
-      );
-    });
+    }).then(() => fetchItems());
   };
 
   const handleDelete = (item) => {
-    if (item.isFavorite) {
-      const updatedItem = {
-        ...item,
-        shoppingDate: null,
-        isBought: false,
-        count: 1,
-      };
-      fetch(`http://localhost:8080/api/shopping/${item.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedItem),
-      }).then(() =>
-        setItems(items.map((i) => (i.id === item.id ? updatedItem : i)))
-      );
-    } else {
-      fetch(`http://localhost:8080/api/shopping/${item.id}`, {
-        method: "DELETE",
-      }).then(() => setItems(items.filter((i) => i.id !== item.id)));
-    }
+    fetch(`http://localhost:8080/api/shopping/${item.id}`, {
+      method: "DELETE",
+    }).then(() => fetchItems());
   };
 
+  // 날짜 필터링과 무관하게 전체 데이터 중 즐겨찾기 항목만 중복 없이 추출
   const uniqueFavorites = Array.from(
     new Set(items.filter((i) => i.isFavorite).map((i) => i.text))
   ).map((text) => items.find((i) => i.text === text && i.isFavorite));

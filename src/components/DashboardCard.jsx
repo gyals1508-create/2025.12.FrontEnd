@@ -35,6 +35,13 @@ const DashboardCard = ({
   const safeCalories = Number(totalCalories) || 0;
   const isOver = safeCalories > 2000;
 
+  // 장바구니 미완료 항목 존재 여부 확인
+  const hasUnconfirmedItems =
+    isShopping &&
+    list &&
+    list.length > 0 &&
+    list.some((item) => !item.isBought);
+
   return (
     <div className="card" style={cardStyle}>
       <h3
@@ -133,7 +140,6 @@ const DashboardCard = ({
                     {isShopping ? (item.isBought ? "✅ " : "🛒 ") : "• "}
                     {item.text || item.title}
                   </span>
-                  {/* 식단 카드일 때 리스트별 칼로리 표시 추가 */}
                   {isMeal && item.calories !== undefined && (
                     <span
                       style={{
@@ -162,6 +168,7 @@ const DashboardCard = ({
           </ul>
         )}
       </div>
+
       {isMeal && (
         <div style={{ textAlign: "center", marginBottom: "15px" }}>
           <p
@@ -184,6 +191,27 @@ const DashboardCard = ({
           </span>
         </div>
       )}
+
+      {/* 버튼 바로 위로 이동된 경고 문구 */}
+      {hasUnconfirmedItems && (
+        <div
+          style={{
+            width: "100%",
+            marginBottom: "15px",
+            textAlign: "center",
+            color: "#f5365c",
+            fontSize: "0.85rem",
+            fontWeight: "bold",
+            backgroundColor: "#fff5f5",
+            padding: "10px",
+            borderRadius: "10px",
+            boxSizing: "border-box",
+          }}
+        >
+          ⚠️ 구매완료 해주세요!
+        </div>
+      )}
+
       <Link to={linkTo} style={{ width: "100%", outline: "none" }}>
         <button
           className="pixel-btn"

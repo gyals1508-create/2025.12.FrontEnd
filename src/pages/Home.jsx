@@ -67,10 +67,15 @@ const Home = () => {
           .filter((t) => t.txType === "EXPENSE")
           .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-        // 중복 제거 로직: 이름(text)이 같은 장바구니 품목은 하나만 표시
-        const uniqueShoppingItems = (shopping || []).filter(
+        // [제발! 핵심 수정] 즐겨찾기 데이터가 섞여와도 대시보드엔 '오늘 날짜'인 것만 골라냄
+        const todayShoppingItems = (shopping || []).filter(
+          (item) => item.shoppingDate === dateStr
+        );
+
+        // 중복 제거 (이름이 같은 품목 중 최신 것 하나만)
+        const uniqueShoppingItems = todayShoppingItems.filter(
           (item, index, self) =>
-            index === self.findIndex((t) => t.text === item.text)
+            index === self.findLastIndex((t) => t.text === item.text)
         );
 
         setDashboardData({
@@ -87,6 +92,9 @@ const Home = () => {
   const totalCalories = dashboardData.meals.reduce(
     (sum, m) => sum + (Number(m.calories) || 0),
     0
+  );
+  const hasUnconfirmedItems = dashboardData.shoppingItems.some(
+    (item) => !item.isBought
   );
   const btnStyle = {
     background: "none",
@@ -127,9 +135,9 @@ const Home = () => {
         >
           <button
             onClick={() => {
-              const newDate = new Date(currentDate);
-              newDate.setDate(newDate.getDate() - 1);
-              setCurrentDate(newDate);
+              const d = new Date(currentDate);
+              d.setDate(d.getDate() - 1);
+              setCurrentDate(d);
             }}
             style={btnStyle}
           >
@@ -144,9 +152,9 @@ const Home = () => {
           />
           <button
             onClick={() => {
-              const newDate = new Date(currentDate);
-              newDate.setDate(newDate.getDate() + 1);
-              setCurrentDate(newDate);
+              const d = new Date(currentDate);
+              d.setDate(d.getDate() + 1);
+              setCurrentDate(d);
             }}
             style={btnStyle}
           >
@@ -186,6 +194,7 @@ const Home = () => {
           linkTo="/shopping"
           btnText="목록 확인"
           isShopping={true}
+          hasUnconfirmedItems={hasUnconfirmedItems}
         />
         <DashboardCard
           title="가계부 💰"

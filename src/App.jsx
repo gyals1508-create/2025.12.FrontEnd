@@ -18,14 +18,19 @@ function Nav() {
   const location = useLocation();
 
   // 특정 페이지(로그인, 회원가입)에서 상단 헤더 숨김 처리
-  if (location.pathname === "/login" || location.pathname === "/signup")
+  // "/" 경로가 로그인이 되었으므로 "/" 도 숨김 목록에 추가하면 더 안전해
+  if (
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/"
+  )
     return null;
 
   return (
     <nav className="pixel-nav-container">
       <div className="pixel-nav-bar">
         <Link
-          to="/"
+          to="/dashboard"
           className="nav-logo-small"
           style={{ textDecoration: "none" }}
         >
@@ -33,8 +38,10 @@ function Nav() {
         </Link>
         <div className="nav-tabs">
           <Link
-            to="/"
-            className={`nav-tab ${location.pathname === "/" ? "active" : ""}`}
+            to="/dashboard"
+            className={`nav-tab ${
+              location.pathname === "/dashboard" ? "active" : ""
+            }`}
           >
             대시보드
           </Link>
@@ -87,11 +94,18 @@ function App() {
       <Nav />
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Home />} />
+          {/* [임시수정] 첫 접속 시 로그인 페이지가 나오도록 설정 */}
+          <Route path="/" element={<Login />} />
+
+          {/* 나중에 팀원들과 합칠 때 위 줄을 지우고 아래 줄 주석을 푸세요 */}
+          {/* <Route path="/" element={<Home />} /> */}
+
+          <Route path="/dashboard" element={<Home />} />
           <Route path="/meal" element={<Meal />} />
           <Route path="/shopping" element={<Shopping />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+
           <Route
             path="/schedule"
             element={
