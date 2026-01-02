@@ -1,5 +1,6 @@
 import React from "react";
-import CartList from "../../components/Cart/CartList"; // 폴더명도 Cart로 변경 가정
+// [수정] ../.. (두칸 위)가 아니라 ../ (한칸 위)가 맞음
+import CartList from "../components/Cart/CartList";
 
 const Cart = () => {
   return (
@@ -8,4 +9,5 @@ const Cart = () => {
     </div>
   );
 };
+
 export default Cart;

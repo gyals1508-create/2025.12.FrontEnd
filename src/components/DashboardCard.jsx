@@ -9,7 +9,7 @@ const DashboardCard = ({
   btnText,
   isMeal,
   isAccount,
-  isShopping,
+  isCart, // [수정] isShopping -> isCart
   isTodo,
   income,
   expense,
@@ -35,8 +35,10 @@ const DashboardCard = ({
   const totalBalance = safeIncome - safeExpense;
   const safeCalories = Number(totalCalories) || 0;
   const isOver = safeCalories > 2000;
+
+  // [수정] 변수명 isCart로 변경
   const hasUnconfirmedItems =
-    isShopping && list?.length > 0 && list.some((item) => !item.isBought);
+    isCart && list?.length > 0 && list.some((item) => !item.isBought);
 
   return (
     <div className="card" style={cardStyle}>
@@ -113,7 +115,6 @@ const DashboardCard = ({
             </div>
           </div>
         ) : isTodo ? (
-          /* [수정] 일정 카드인 경우 목록 대신 비어있는 메시지 표시 */
           <p style={{ color: "#cbd5e0", textAlign: "center", margin: "auto" }}>
             {emptyMsg}
           </p>
@@ -140,7 +141,8 @@ const DashboardCard = ({
                       textOverflow: "ellipsis",
                     }}
                   >
-                    {isShopping ? (item.isBought ? "✅ " : "🛒 ") : "• "}
+                    {/* [수정] 아이콘 표시 로직 isCart 사용 */}
+                    {isCart ? (item.isBought ? "✅ " : "🛒 ") : "• "}
                     {isMeal && item.mealType && (
                       <strong style={{ color: "#5e72e4", marginRight: "6px" }}>
                         [{item.mealType}]

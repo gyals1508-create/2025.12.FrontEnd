@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { ko } from "date-fns/locale";
-import DashboardCard from "../components/DashboardCard";
+import DashboardCard from "../components/DashboardCard"; // 경로 확인 필요 (components/Cart/DashboardCard.jsx 인지 확인)
 import "react-datepicker/dist/react-datepicker.css";
 import "../Retro.css";
 
@@ -9,9 +9,11 @@ registerLocale("ko", ko);
 
 const Home = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // [수정 1] shoppingItems -> cartItems로 이름 통일
   const [dashboardData, setDashboardData] = useState({
     meals: [],
-    shoppingItems: [],
+    cartItems: [],
     todos: [],
     income: 0,
     expense: 0,
@@ -64,7 +66,8 @@ const Home = () => {
       fetch(fetchUrl(`meals?date=${dateStr}`)).then((res) =>
         res.json().catch(() => [])
       ),
-      fetch(fetchUrl(`shopping?date=${dateStr}`)).then((res) =>
+      // [수정 2] shopping -> cart (백엔드 URL 변경 반영)
+      fetch(fetchUrl(`cart?date=${dateStr}`)).then((res) =>
         res.json().catch(() => [])
       ),
       fetch(fetchUrl(`todo?userId=${userId}&date=${dateStr}`)).then((res) =>
@@ -74,27 +77,30 @@ const Home = () => {
         res.json().catch(() => [])
       ),
     ])
-      .then(([meals, shopping, todos, txs]) => {
+      .then(([meals, cartData, todos, txs]) => {
         const income = (txs || [])
           .filter((t) => t.txType === "INCOME")
           .reduce((sum, t) => sum + (t.amount || 0), 0);
         const expense = (txs || [])
           .filter((t) => t.txType === "EXPENSE")
           .reduce((sum, t) => sum + (t.amount || 0), 0);
-        const todayShoppingItems = (shopping || []).filter(
+
+        // [수정 3] 받아온 데이터 변수명도 cartData로 취급
+        const todayCartItems = (cartData || []).filter(
           (item) => item.shoppingDate === dateStr
         );
-        const uniqueShoppingItems = todayShoppingItems.filter(
+        const uniqueCartItems = todayCartItems.filter(
           (item, index, self) =>
             index === self.findLastIndex((t) => t.text === item.text)
         );
+
         const combinedTodos = [...dummyTodos, ...(todos || [])].filter(
           (t) => t.dodate === dateStr
         );
 
         setDashboardData({
           meals: meals || [],
-          shoppingItems: uniqueShoppingItems,
+          cartItems: uniqueCartItems, // [수정] State 키와 일치시킴
           todos: combinedTodos,
           income,
           expense,
@@ -107,11 +113,12 @@ const Home = () => {
     (sum, m) => sum + (Number(m.calories) || 0),
     0
   );
-  const hasUnconfirmedItems = dashboardData.shoppingItems.some(
+
+  // [수정] 변수명 일치 (shoppingItems -> cartItems)
+  const hasUnconfirmedItems = dashboardData.cartItems.some(
     (item) => !item.isBought
   );
 
-  // [수정] 요청하신 버튼 스타일만 정확히 변경 (테두리 제거 및 색상 적용)
   const btnStyle = {
     background: "none",
     border: "none",
@@ -207,11 +214,12 @@ const Home = () => {
         />
         <DashboardCard
           title="장바구니 🛍️"
-          list={dashboardData.shoppingItems}
+          // [핵심 수정] 이제 dashboardData.cartItems가 존재하므로 정상 작동
+          list={dashboardData.cartItems}
           emptyMsg="구매 목록이 비어있어요!"
-          linkTo="/shopping"
+          linkTo="/cart"
           btnText="목록 확인"
-          isShopping={true}
+          isCart={true} // 아까 수정한 DashboardCard Props와 일치
           hasUnconfirmedItems={hasUnconfirmedItems}
         />
         <DashboardCard

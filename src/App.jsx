@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import Home from "./pages/Home";
 import Meal from "./pages/Meal";
-import Shopping from "./pages/Shopping";
+import Cart from "./pages/Cart"; // [체크포인트 1] 파일 경로 확인
 import "./Retro.css";
 
 function Nav() {
@@ -40,10 +40,11 @@ function Nav() {
             식단 관리
           </Link>
           <div className="nav-divider"></div>
+          {/* [체크포인트 2] 링크 주소 확인 (to="/cart") */}
           <Link
-            to="/shopping"
+            to="/cart"
             className={`nav-tab ${
-              location.pathname === "/shopping" ? "active" : ""
+              location.pathname === "/cart" ? "active" : ""
             }`}
           >
             장바구니
@@ -63,7 +64,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/meal" element={<Meal />} />
-          <Route path="/shopping" element={<Shopping />} />
+          {/* [체크포인트 3] 라우트 경로 확인 (path="/cart") */}
+          <Route path="/cart" element={<Cart />} />
           <Route
             path="*"
             element={
