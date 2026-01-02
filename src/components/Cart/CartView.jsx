@@ -1,8 +1,8 @@
 import React from "react";
-import ShoppingMainSection from "./ShoppingMainSection";
-import ShoppingFavSection from "./ShoppingFavSection";
+import CartMainSection from "./CartMainSection";
+import CartFavSection from "./CartFavSection";
 
-const ShoppingView = (props) => {
+const CartView = (props) => {
   return (
     <div
       style={{
@@ -30,8 +30,8 @@ const ShoppingView = (props) => {
         .fav-delete-btn { background: transparent !important; color: #cbd5e0 !important; border: none !important; }
         .fav-delete-btn:hover { color: #f56565 !important; }
       `}</style>
-      <ShoppingMainSection {...props} />
-      <ShoppingFavSection
+      <CartMainSection {...props} />
+      <CartFavSection
         uniqueFavorites={props.uniqueFavorites}
         onAdd={props.onAdd}
         onToggleFav={props.onToggleFav}
@@ -39,4 +39,4 @@ const ShoppingView = (props) => {
     </div>
   );
 };
-export default ShoppingView;
+export default CartView;

@@ -1,12 +1,6 @@
 import React from "react";
 
-const ShoppingItem = ({
-  item,
-  searchTarget,
-  onMark,
-  onDelete,
-  onToggleFav,
-}) => {
+const CartItem = ({ item, searchTarget, onMark, onDelete, onToggleFav }) => {
   return (
     <div
       className="item-row"
@@ -41,7 +35,6 @@ const ShoppingItem = ({
           }}
         >
           {item.text}
-          {/* [수정] 괄호 제거하고 'N개' 형태로 표시 */}
           {item.count > 1 && (
             <span
               style={{
@@ -99,4 +92,4 @@ const ShoppingItem = ({
   );
 };
 
-export default ShoppingItem;
+export default CartItem;

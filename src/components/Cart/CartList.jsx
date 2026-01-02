@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ShoppingView from "./ShoppingView";
+import CartView from "./CartView";
 
-const ShoppingList = () => {
+const CartList = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [items, setItems] = useState([]);
-  // [수정 1] 즐겨찾기를 위한 별도 상태 추가
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -18,10 +17,9 @@ const ShoppingList = () => {
       "0"
     )}-${String(dateObj.getDate()).padStart(2, "0")}`;
 
-  // [수정 2] 즐겨찾기 목록을 별도로 불러오는 함수 (백엔드 API 필요)
-  // 만약 별도 API가 없다면 fetchItems 결과에서 추출해서 초기화해야 함
   const fetchFavorites = () => {
-    fetch("http://localhost:8080/api/shopping/favorites")
+    // [변경] api/shopping -> api/cart
+    fetch("http://localhost:8080/api/cart/favorites")
       .then((res) => res.json())
       .then((data) => setFavorites(data))
       .catch((e) => console.log("즐겨찾기 로드 실패(혹은 API 없음):", e));
@@ -29,7 +27,8 @@ const ShoppingList = () => {
 
   const fetchItems = () => {
     setIsLoading(true);
-    fetch(`http://localhost:8080/api/shopping?date=${getApiDate(currentDate)}`)
+    // [변경] api/shopping -> api/cart
+    fetch(`http://localhost:8080/api/cart?date=${getApiDate(currentDate)}`)
       .then((res) => res.json())
       .then((data) => {
         setItems(
@@ -46,46 +45,43 @@ const ShoppingList = () => {
 
   useEffect(() => {
     fetchItems();
-    fetchFavorites(); // [수정 3] 초기 로드 시 즐겨찾기 따로 호출
+    fetchFavorites();
   }, [currentDate]);
 
   const handleToggleFav = (item) => {
     const newFavStatus = !item.isFavorite;
 
-    // 1. 장보기 목록(items) 업데이트
     setItems((prev) =>
       prev.map((i) =>
         i.text === item.text ? { ...i, isFavorite: newFavStatus } : i
       )
     );
 
-    // 2. 즐겨찾기 목록(favorites) 업데이트 (즉시 반영)
     if (newFavStatus) {
-      // 추가: 중복 방지를 위해 확인 후 추가
       setFavorites((prev) => {
         if (prev.some((f) => f.text === item.text)) return prev;
         return [...prev, { ...item, isFavorite: true }];
       });
     } else {
-      // 삭제: 즐겨찾기 목록에서 제거
       setFavorites((prev) => prev.filter((f) => f.text !== item.text));
     }
 
     const updated = { ...item, isFavorite: newFavStatus };
-    fetch(`http://localhost:8080/api/shopping/${item.id}`, {
+    // [변경] api/shopping -> api/cart
+    fetch(`http://localhost:8080/api/cart/${item.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
     }).then(() => {
-      // fetchItems(); // 굳이 전체 리로드 안 해도 됨 (깜빡임 방지)
+      // fetchItems();
     });
   };
 
   const handleDelete = (item) => {
-    // [핵심 수정] items에서만 제거하고, favorites는 건드리지 않음!
     setItems((prev) => prev.filter((i) => i.id !== item.id));
 
-    fetch(`http://localhost:8080/api/shopping/${item.id}`, {
+    // [변경] api/shopping -> api/cart
+    fetch(`http://localhost:8080/api/cart/${item.id}`, {
       method: "DELETE",
     }).then((res) => {
       if (!res.ok) fetchItems();
@@ -93,7 +89,7 @@ const ShoppingList = () => {
   };
 
   return (
-    <ShoppingView
+    <CartView
       {...{
         currentDate,
         items,
@@ -104,7 +100,6 @@ const ShoppingList = () => {
         searchResults,
         searchTarget,
       }}
-      // [수정 4] 계산된 값이 아닌, 별도 관리되는 favorites 상태 전달
       uniqueFavorites={favorites}
       onDateChange={(n) => {
         const d = new Date(currentDate);
@@ -114,8 +109,9 @@ const ShoppingList = () => {
       onDatePickerChange={setCurrentDate}
       onSearch={() => {
         if (!inputValue.trim()) return;
+        // [변경] api/shopping -> api/cart
         fetch(
-          `http://localhost:8080/api/shopping/search?text=${encodeURIComponent(
+          `http://localhost:8080/api/cart/search?text=${encodeURIComponent(
             inputValue
           )}`
         )
@@ -134,7 +130,8 @@ const ShoppingList = () => {
       }}
       onAdd={(text) => {
         if (!text || !text.trim()) return;
-        fetch("http://localhost:8080/api/shopping", {
+        // [변경] api/shopping -> api/cart
+        fetch("http://localhost:8080/api/cart", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -165,7 +162,8 @@ const ShoppingList = () => {
       }}
       onMark={(item) => {
         const updated = { ...item, isBought: true };
-        fetch(`http://localhost:8080/api/shopping/${item.id}`, {
+        // [변경] api/shopping -> api/cart
+        fetch(`http://localhost:8080/api/cart/${item.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updated),
@@ -195,4 +193,4 @@ const ShoppingList = () => {
     />
   );
 };
-export default ShoppingList;
+export default CartList;

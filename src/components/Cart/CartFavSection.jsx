@@ -1,6 +1,6 @@
 import React from "react";
 
-const ShoppingFavSection = ({ uniqueFavorites, onAdd, onToggleFav }) => {
+const CartFavSection = ({ uniqueFavorites, onAdd, onToggleFav }) => {
   return (
     <div
       className="pixel-card"
@@ -69,4 +69,4 @@ const ShoppingFavSection = ({ uniqueFavorites, onAdd, onToggleFav }) => {
     </div>
   );
 };
-export default ShoppingFavSection;
+export default CartFavSection;

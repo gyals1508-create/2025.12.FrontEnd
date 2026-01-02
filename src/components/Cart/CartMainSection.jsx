@@ -1,8 +1,8 @@
 import React from "react";
 import DatePicker from "react-datepicker";
-import ShoppingItem from "./ShoppingItem";
+import CartItem from "./CartItem";
 
-const ShoppingMainSection = (props) => {
+const CartMainSection = (props) => {
   const {
     currentDate,
     onDateChange,
@@ -163,7 +163,7 @@ const ShoppingMainSection = (props) => {
         }}
       >
         {displayedItems.map((item) => (
-          <ShoppingItem
+          <CartItem
             key={item.id}
             item={item}
             searchTarget={searchTarget}
@@ -177,4 +177,4 @@ const ShoppingMainSection = (props) => {
   );
 };
 
-export default ShoppingMainSection;
+export default CartMainSection;
