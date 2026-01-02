@@ -10,6 +10,7 @@ const DashboardCard = ({
   isMeal,
   isAccount,
   isShopping,
+  isTodo,
   income,
   expense,
   totalCalories,
@@ -29,8 +30,13 @@ const DashboardCard = ({
     boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
   };
 
-  const totalBalance = (income || 0) - (expense || 0);
-  const isOver = (totalCalories || 0) > 2000;
+  const safeIncome = Number(income) || 0;
+  const safeExpense = Number(expense) || 0;
+  const totalBalance = safeIncome - safeExpense;
+  const safeCalories = Number(totalCalories) || 0;
+  const isOver = safeCalories > 2000;
+  const hasUnconfirmedItems =
+    isShopping && list?.length > 0 && list.some((item) => !item.isBought);
 
   return (
     <div className="card" style={cardStyle}>
@@ -51,6 +57,9 @@ const DashboardCard = ({
           flex: 1,
           textAlign: "left",
           padding: "20px 10px",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {isAccount ? (
@@ -66,13 +75,13 @@ const DashboardCard = ({
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "#a0aec0" }}>수입</span>
               <span style={{ color: "#5e72e4", fontWeight: "bold" }}>
-                +{income.toLocaleString()}원
+                +{safeIncome.toLocaleString()}원
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "#a0aec0" }}>지출</span>
               <span style={{ color: "#f5365c", fontWeight: "bold" }}>
-                -{expense.toLocaleString()}원
+                -{safeExpense.toLocaleString()}원
               </span>
             </div>
             <div
@@ -103,9 +112,14 @@ const DashboardCard = ({
               </span>
             </div>
           </div>
+        ) : isTodo ? (
+          /* [수정] 일정 카드인 경우 목록 대신 비어있는 메시지 표시 */
+          <p style={{ color: "#cbd5e0", textAlign: "center", margin: "auto" }}>
+            {emptyMsg}
+          </p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {list && list.length > 0 ? (
+            {list?.length > 0 ? (
               list.slice(0, 5).map((item, idx) => (
                 <li
                   key={idx}
@@ -113,10 +127,39 @@ const DashboardCard = ({
                     marginBottom: "12px",
                     fontSize: "0.95rem",
                     color: item.isBought ? "#cbd5e0" : "#4a5568",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
-                  {isShopping ? (item.isBought ? "✅ " : "🛒 ") : "• "}
-                  {item.text || item.title}
+                  <span
+                    style={{
+                      flex: 1,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {isShopping ? (item.isBought ? "✅ " : "🛒 ") : "• "}
+                    {isMeal && item.mealType && (
+                      <strong style={{ color: "#5e72e4", marginRight: "6px" }}>
+                        [{item.mealType}]
+                      </strong>
+                    )}
+                    {item.text || item.menuName}
+                  </span>
+                  {isMeal && item.calories !== undefined && (
+                    <span
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "#a0aec0",
+                        marginLeft: "8px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.calories} kcal
+                    </span>
+                  )}
                 </li>
               ))
             ) : (
@@ -133,6 +176,7 @@ const DashboardCard = ({
           </ul>
         )}
       </div>
+
       {isMeal && (
         <div style={{ textAlign: "center", marginBottom: "15px" }}>
           <p
@@ -151,10 +195,29 @@ const DashboardCard = ({
               color: isOver ? "#f5365c" : "#48bb78",
             }}
           >
-            {(totalCalories || 0).toLocaleString()} kcal
+            {safeCalories.toLocaleString()} kcal
           </span>
         </div>
       )}
+
+      {hasUnconfirmedItems && (
+        <div
+          style={{
+            width: "100%",
+            marginBottom: "15px",
+            textAlign: "center",
+            color: "#f5365c",
+            fontSize: "0.85rem",
+            fontWeight: "bold",
+            backgroundColor: "#fff5f5",
+            padding: "10px",
+            borderRadius: "10px",
+          }}
+        >
+          ⚠️ 구매완료 해주세요!
+        </div>
+      )}
+
       <Link to={linkTo} style={{ width: "100%", outline: "none" }}>
         <button
           className="pixel-btn"

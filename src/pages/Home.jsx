@@ -17,6 +17,21 @@ const Home = () => {
     expense: 0,
   });
 
+  const dummyTodos = [
+    {
+      todoid: "d1",
+      content: "🏃 조깅하기",
+      isDone: false,
+      dodate: "2026-01-01",
+    },
+    {
+      todoid: "d2",
+      content: "📚 리액트 공부",
+      isDone: true,
+      dodate: "2026-01-01",
+    },
+  ];
+
   const getDateStr = (dateObj) => {
     const year = dateObj.getFullYear();
     const month = String(dateObj.getMonth() + 1).padStart(2, "0");
@@ -46,26 +61,41 @@ const Home = () => {
     const fetchUrl = (path) => `http://localhost:8080/api/${path}`;
 
     Promise.all([
-      fetch(fetchUrl(`meals?date=${dateStr}`)).then((res) => res.json()),
-      fetch(fetchUrl(`shopping?date=${dateStr}`)).then((res) => res.json()),
+      fetch(fetchUrl(`meals?date=${dateStr}`)).then((res) =>
+        res.json().catch(() => [])
+      ),
+      fetch(fetchUrl(`shopping?date=${dateStr}`)).then((res) =>
+        res.json().catch(() => [])
+      ),
       fetch(fetchUrl(`todo?userId=${userId}&date=${dateStr}`)).then((res) =>
-        res.json()
+        res.json().catch(() => [])
       ),
       fetch(fetchUrl(`tx?userId=${userId}&date=${dateStr}`)).then((res) =>
-        res.json()
+        res.json().catch(() => [])
       ),
     ])
       .then(([meals, shopping, todos, txs]) => {
-        const income = txs
+        const income = (txs || [])
           .filter((t) => t.txType === "INCOME")
-          .reduce((sum, t) => sum + t.amount, 0);
-        const expense = txs
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
+        const expense = (txs || [])
           .filter((t) => t.txType === "EXPENSE")
-          .reduce((sum, t) => sum + t.amount, 0);
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
+        const todayShoppingItems = (shopping || []).filter(
+          (item) => item.shoppingDate === dateStr
+        );
+        const uniqueShoppingItems = todayShoppingItems.filter(
+          (item, index, self) =>
+            index === self.findLastIndex((t) => t.text === item.text)
+        );
+        const combinedTodos = [...dummyTodos, ...(todos || [])].filter(
+          (t) => t.dodate === dateStr
+        );
+
         setDashboardData({
-          meals,
-          shoppingItems: shopping,
-          todos,
+          meals: meals || [],
+          shoppingItems: uniqueShoppingItems,
+          todos: combinedTodos,
           income,
           expense,
         });
@@ -77,11 +107,16 @@ const Home = () => {
     (sum, m) => sum + (Number(m.calories) || 0),
     0
   );
+  const hasUnconfirmedItems = dashboardData.shoppingItems.some(
+    (item) => !item.isBought
+  );
+
+  // [수정] 요청하신 버튼 스타일만 정확히 변경 (테두리 제거 및 색상 적용)
   const btnStyle = {
     background: "none",
     border: "none",
     cursor: "pointer",
-    color: "#5e72e4",
+    color: "#AAB7EC",
     fontSize: "1.5rem",
     outline: "none",
     boxShadow: "none",
@@ -107,7 +142,6 @@ const Home = () => {
         >
           👛 POCKET DASHBOARD
         </h2>
-        {/* 화살표 정렬 보정 영역 */}
         <div
           style={{
             display: "flex",
@@ -116,11 +150,11 @@ const Home = () => {
           }}
         >
           <button
-            onClick={() =>
-              setCurrentDate(
-                new Date(currentDate.setDate(currentDate.getDate() - 1))
-              )
-            }
+            onClick={() => {
+              const d = new Date(currentDate);
+              d.setDate(d.getDate() - 1);
+              setCurrentDate(d);
+            }}
             style={btnStyle}
           >
             ◀
@@ -133,17 +167,18 @@ const Home = () => {
             customInput={<CustomInput />}
           />
           <button
-            onClick={() =>
-              setCurrentDate(
-                new Date(currentDate.setDate(currentDate.getDate() + 1))
-              )
-            }
+            onClick={() => {
+              const d = new Date(currentDate);
+              d.setDate(d.getDate() + 1);
+              setCurrentDate(d);
+            }}
             style={btnStyle}
           >
             ▶
           </button>
         </div>
       </header>
+
       <div
         style={{
           display: "flex",
@@ -159,6 +194,7 @@ const Home = () => {
           emptyMsg="할 일이 없어요!"
           linkTo="/schedule"
           btnText="자세히 보기"
+          isTodo={true}
         />
         <DashboardCard
           title="오늘의 식단 🍚"
@@ -176,6 +212,7 @@ const Home = () => {
           linkTo="/shopping"
           btnText="목록 확인"
           isShopping={true}
+          hasUnconfirmedItems={hasUnconfirmedItems}
         />
         <DashboardCard
           title="가계부 💰"
@@ -189,4 +226,5 @@ const Home = () => {
     </div>
   );
 };
+
 export default Home;
