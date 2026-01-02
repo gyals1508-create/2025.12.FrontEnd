@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+// 경로에 맞춰 수정 (같은 폴더면 "./Modal", components 폴더면 "../components/Modal")
 import Modal from "../components/Modal";
 
 export default function LoginPage({ onGoSignup, onLoginSuccess }) {
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
+  const [showPw, setShowPw] = useState(false); // 비밀번호 보이기 상태
 
   const [m, setM] = useState({
     open: false,
@@ -68,6 +70,18 @@ export default function LoginPage({ onGoSignup, onLoginSuccess }) {
     });
   };
 
+  // [추가] 소셜 로그인 시뮬레이션 (가짜 로그인)
+  const handleSocialLogin = (provider) => {
+    // 실제로는 여기서 구글/네이버 API를 호출하지만, 과제용으로 바로 성공 처리
+    localStorage.setItem(
+      "mock_token",
+      "mock-social-" + provider + "-" + Date.now()
+    );
+    openOk(`${provider} 계정으로 로그인되었습니다.`, () => {
+      onLoginSuccess?.();
+    });
+  };
+
   return (
     <>
       <form onSubmit={login} className="form">
@@ -84,6 +98,7 @@ export default function LoginPage({ onGoSignup, onLoginSuccess }) {
             value={id}
             onChange={(e) => setId(e.target.value)}
             placeholder="아이디"
+            style={{ flex: 1 }}
           />
         </div>
 
@@ -95,11 +110,35 @@ export default function LoginPage({ onGoSignup, onLoginSuccess }) {
           </span>
           <input
             className="input"
-            type="password"
+            type={showPw ? "text" : "password"}
             value={pw}
             onChange={(e) => setPw(e.target.value)}
             placeholder="비밀번호"
+            style={{ flex: 1 }}
           />
+          <button
+            type="button"
+            onClick={() => setShowPw(!showPw)}
+            style={{
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              padding: "0 5px",
+              display: "flex",
+              alignItems: "center",
+              color: "#a0aec0",
+            }}
+          >
+            {showPw ? (
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-4.01.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78 3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+              </svg>
+            )}
+          </button>
         </div>
 
         <button className="primaryBtn" type="submit">
@@ -122,13 +161,18 @@ export default function LoginPage({ onGoSignup, onLoginSuccess }) {
 
         <div className="dividerRow">
           <div className="hr" />
-          <div className="or">소셜 로그인</div>
+          <div className="or">또는</div>
           <div className="hr" />
         </div>
 
         <div className="socialRow">
-          {/* [수정] 요청하신 구글 이미지 태그로 교체 */}
-          <button type="button" className="social google" aria-label="Google">
+          {/* [수정] 구글 버튼에 클릭 이벤트 추가 */}
+          <button
+            type="button"
+            className="social google"
+            aria-label="Google"
+            onClick={() => handleSocialLogin("Google")}
+          >
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
               alt="Google"
@@ -136,7 +180,13 @@ export default function LoginPage({ onGoSignup, onLoginSuccess }) {
             />
           </button>
 
-          <button type="button" className="social naver" aria-label="Naver">
+          {/* [수정] 네이버 버튼에 클릭 이벤트 추가 */}
+          <button
+            type="button"
+            className="social naver"
+            aria-label="Naver"
+            onClick={() => handleSocialLogin("Naver")}
+          >
             N
           </button>
         </div>

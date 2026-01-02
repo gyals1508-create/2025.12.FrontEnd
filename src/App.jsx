@@ -84,7 +84,7 @@ function Nav({ onLogout }) {
 }
 
 export default function App() {
-  // 로그인 상태 관리
+  // 로그인 상태 관리 (테스트를 위해 기본값을 true로 설정하거나, localStorage 확인)
   const [authed, setAuthed] = useState(!!localStorage.getItem("mock_token"));
   const [view, setView] = useState("login"); // login or signup
 
@@ -92,9 +92,11 @@ export default function App() {
     localStorage.removeItem("mock_token");
     setAuthed(false);
     setView("login");
+    // [핵심] 로그아웃 시에도 URL을 / (대시보드)로 초기화
+    window.history.pushState(null, "", "/");
   };
 
-  // 1. 로그인이 안 된 경우 -> 로그인/회원가입 화면
+  // 1. 로그인이 안 된 경우 -> 로그인/회원가입 화면 (Auth.css 적용)
   if (!authed) {
     return (
       <div className="authBg">
@@ -103,7 +105,8 @@ export default function App() {
 
           <div className="topBar"></div>
 
-          <div className="card">
+          {/* [중요] auth-card 클래스 유지 (로그인 UI 깨짐 방지) */}
+          <div className="auth-card">
             <div className="banner">
               <svg className="drop" viewBox="0 0 64 64" aria-hidden="true">
                 <path d="M32 6C24 18 16 26 16 38a16 16 0 0 0 32 0C48 26 40 18 32 6z" />
@@ -116,7 +119,11 @@ export default function App() {
               ) : (
                 <LoginPage
                   onGoSignup={() => setView("signup")}
-                  onLoginSuccess={() => setAuthed(true)}
+                  onLoginSuccess={() => {
+                    setAuthed(true);
+                    // [핵심] 로그인 성공 시 무조건 URL을 / (대시보드)로 변경
+                    window.history.pushState(null, "", "/");
+                  }}
                 />
               )}
             </div>
@@ -126,7 +133,7 @@ export default function App() {
     );
   }
 
-  // 2. 로그인이 된 경우 -> 대시보드
+  // 2. 로그인이 된 경우 -> 대시보드 (Retro.css 적용)
   return (
     <BrowserRouter>
       <Nav onLogout={logout} />
@@ -136,7 +143,7 @@ export default function App() {
           <Route path="/meal" element={<Meal />} />
           <Route path="/cart" element={<Cart />} />
 
-          {/* [수정] 일정, 가계부 임시 페이지에 글자색(color) 추가 */}
+          {/* 일정, 가계부 라우트 - 글자색(color) 추가됨 */}
           <Route
             path="/schedule"
             element={
